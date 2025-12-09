@@ -22,38 +22,38 @@ from typing import Dict
 from langgraph.graph import StateGraph, START, END
 
 from brain.models.state import BrainState, update_timestamp, add_log
+from brain.nodes.perception.vision_node import vision_node
 
 
 # ============================================================================
-# Placeholder Node Functions
+# Perception Node Functions
 # ============================================================================
 
 def perception_node(state: BrainState) -> Dict[str, BrainState]:
     """Process sensory inputs (vision, audio).
     
-    This node will eventually:
-    - Detect faces via Hailo HAT
-    - Detect wake words
-    - Track humans across frames
-    - Calculate head orientation for eye contact
+    Currently implements:
+    - Face detection via vision_node (YOLO-based)
     
-    Currently: Placeholder that logs execution.
+    TODO:
+    - Audio wake word detection
+    - Multi-modal sensor fusion
     
     Args:
         state: Current BrainState
         
     Returns:
-        Dict with updated BrainState
+        Dict with updated BrainState including face detections
     """
+    # Run vision processing
+    updated_state = vision_node(state)
+    state = updated_state["state"]
+    
+    # Add perception summary log
     updated = state.model_copy(deep=True)
-    updated = add_log(updated, "Perception node executed")
+    num_faces = len(updated.sensors.vision.faces)
+    updated = add_log(updated, f"Perception node: {num_faces} face(s) detected")
     updated = update_timestamp(updated)
-    
-    # Placeholder: In real implementation, would update:
-    # - state.sensors.vision.faces
-    # - state.sensors.audio.wake_word_detected
-    # - state.world_model.humans
-    
     return {"state": updated}
 
 
