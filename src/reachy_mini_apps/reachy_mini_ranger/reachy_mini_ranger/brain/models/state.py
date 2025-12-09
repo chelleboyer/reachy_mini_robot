@@ -115,10 +115,12 @@ class Human(BaseModel):
     human_id: int
     position: Position3D
     face_id: Optional[int] = None
+    persistent_id: Optional[int] = None  # Persistent tracking ID across frames
     person_id: Optional[str] = None  # From memory system
     name: Optional[str] = None
     last_seen: datetime = Field(default_factory=datetime.now)
     is_primary: bool = False  # Primary attention target
+    tracking_confidence: float = Field(default=1.0, ge=0.0, le=1.0)  # Tracking stability
 
 
 class Pose3D(BaseModel):

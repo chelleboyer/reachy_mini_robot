@@ -16,7 +16,15 @@ from typing import Dict
 import numpy as np
 from numpy.typing import NDArray
 
-from reachy_mini_ranger.brain.models.state import BrainState, Face, add_log, update_timestamp
+from reachy_mini_ranger.brain.models.state import (
+    BrainState,
+    Face,
+    Human,
+    Position3D,
+    add_log,
+    update_timestamp,
+)
+from reachy_mini_ranger.brain.nodes.perception.face_tracker import FaceTracker
 
 try:
     from supervision import Detections
@@ -158,35 +166,113 @@ class FaceDetectionNode:
             return []
 
 
-def vision_node(state: BrainState) -> Dict[str, BrainState]:
-    """Vision perception node for LangGraph.
+# Module-level singletons for face detection and tracking
+_face_detector: Optional[FaceDetectionNode] = None
+_face_tracker: Optional[FaceTracker] = None
 
-    Processes camera frames to detect faces and updates BrainState.sensors.vision.
+
+def get_face_detector() -> FaceDetectionNode:
+    """Get or create singleton face detector."""
+    global _face_detector
+    if _face_detector is None:
+        _face_detector = FaceDetectionNode()
+    return _face_detector
+
+
+def get_face_tracker() -> FaceTracker:
+    """Get or create singleton face tracker."""
+    global _face_tracker
+    if _face_tracker is None:
+        _face_tracker = FaceTracker(max_distance=100.0, track_timeout=2.0)
+    return _face_tracker
+
+
+def vision_node(state: BrainState) -> Dict[str, BrainState]:
+    """Vision perception node for LangGraph with face tracking.
+
+    Processes camera frames to detect and track faces, then updates:
+    - BrainState.sensors.vision.faces (raw detections)
+    - BrainState.world_model.humans (tracked faces with 3D positions)
 
     Note:
-        This is a placeholder implementation. In production:
+        This is a placeholder implementation for camera integration.
+        In production:
         - Camera frames should come from ReachyMini media interface
-        - FaceDetectionNode should be initialized once and reused
         - Frame acquisition should be optimized for real-time performance
 
     Args:
         state: Current BrainState
 
     Returns:
-        Dictionary with updated BrainState containing face detections
+        Dictionary with updated BrainState containing tracked faces
     """
     updated = state.model_copy(deep=True)
-    updated = add_log(updated, "Vision perception node executed (placeholder)")
-    updated = update_timestamp(updated)
 
     # TODO: Integrate with ReachyMini camera
-    # TODO: Initialize FaceDetectionNode as singleton
-    # TODO: Process frame and update state.sensors.vision.faces
-    # TODO: Calculate FPS and update state.sensors.vision.fps
+    # TODO: Calculate real-time FPS
+    # For now, placeholder implementation with no camera
 
-    # Placeholder: Clear faces since we have no camera yet
+    # Placeholder: Clear faces and humans since we have no camera yet
     updated.sensors.vision.faces = []
     updated.sensors.vision.frame_timestamp = datetime.now()
     updated.sensors.vision.fps = 0.0
+    updated.world_model.humans = []
+
+    updated = add_log(updated, "Vision node: 0 face(s) tracked (no camera)")
+    updated = update_timestamp(updated)
 
     return {"state": updated}
+
+
+def process_camera_frame(
+    frame: NDArray[np.uint8],
+    frame_width: int,
+    frame_height: int,
+) -> tuple[list[Face], list[Human], Optional[int]]:
+    """Process camera frame with face detection and tracking.
+    
+    This function is ready for production use when camera integration is complete.
+    
+    Args:
+        frame: BGR image from camera
+        frame_width: Frame width in pixels
+        frame_height: Frame height in pixels
+        
+    Returns:
+        Tuple of (detected_faces, tracked_humans, primary_face_id)
+    """
+    detector = get_face_detector()
+    tracker = get_face_tracker()
+    
+    # Detect faces
+    detected_faces = detector.detect_faces(frame)
+    
+    # Update tracker with detections
+    tracked_faces = tracker.update(detected_faces)
+    
+    # Convert tracked faces to Human objects with 3D positions
+    humans: list[Human] = []
+    for track in tracked_faces:
+        position_3d = tracker.estimate_3d_position(track, frame_width, frame_height)
+        human = Human(
+            human_id=track.persistent_id,
+            persistent_id=track.persistent_id,
+            position=position_3d,
+            face_id=track.face.face_id,
+            last_seen=datetime.fromtimestamp(track.last_seen),
+            tracking_confidence=track.tracking_confidence,
+            is_primary=False,  # Will be set below
+        )
+        humans.append(human)
+    
+    # Select primary face
+    primary_id = tracker.select_primary_face(tracked_faces, frame_width, frame_height)
+    
+    # Mark primary human
+    if primary_id is not None:
+        for human in humans:
+            if human.persistent_id == primary_id:
+                human.is_primary = True
+                break
+    
+    return detected_faces, humans, primary_id

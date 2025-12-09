@@ -40,7 +40,7 @@ development_status:
   # Epic 2: Vision Perception Layer (Weeks 2-3)
   epic-2: in-progress
   2-1-implement-face-detection-node-hailo-hat: done
-  2-2-implement-face-tracking-position-estimation: backlog
+  2-2-implement-face-tracking-position-estimation: done
   2-3-implement-head-orientation-calculation: backlog
   epic-2-retrospective: optional
 
