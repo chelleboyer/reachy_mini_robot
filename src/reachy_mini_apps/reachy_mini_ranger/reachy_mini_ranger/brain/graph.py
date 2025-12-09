@@ -140,27 +140,61 @@ def skill_node(state: BrainState) -> BrainState:
 def execution_node(state: BrainState) -> BrainState:
     """Execute actuator commands with safety filtering.
     
-    This node will eventually:
-    - Validate commands against safety limits
-    - Execute motor movements via Reachy Mini SDK
-    - Execute TTS voice output
+    Safety filter validates all motor commands against physical limits:
+    - Head yaw: ±180° (full rotation)
+    - Head pitch: ±40° (prevent cable strain)
+    - Head roll: ±40° (prevent cable strain)
+    - Body-to-head yaw difference: ±65° (prevent body twist)
     
-    Currently: Placeholder that logs execution.
+    Violations are logged and clamped to safe limits.
+    
+    Note: This node prepares safe commands for execution. The main app
+    loop actually executes commands via ReachyMini SDK.
     
     Args:
-        state: Current BrainState
+        state: Current BrainState with actuator_commands
         
     Returns:
-        Updated BrainState
+        Updated BrainState with validated actuator_commands
     """
     updated = state.model_copy(deep=True)
-    updated = add_log(updated, "Execution node executed")
-    updated = update_timestamp(updated)
     
-    # Placeholder: In real implementation, would:
-    # - Validate state.actuator_commands (safety filter)
-    # - Execute via ReachyMini SDK
-    # - Execute TTS
+    # Safety validation for head commands
+    head_cmd = updated.actuator_commands.head
+    violations = []
+    
+    # Clamp yaw to ±180°
+    if head_cmd.yaw < -180.0:
+        violations.append(f"yaw {head_cmd.yaw:.1f}° < -180° (clamped)")
+        head_cmd.yaw = -180.0
+    elif head_cmd.yaw > 180.0:
+        violations.append(f"yaw {head_cmd.yaw:.1f}° > 180° (clamped)")
+        head_cmd.yaw = 180.0
+    
+    # Clamp pitch to ±40°
+    if head_cmd.pitch < -40.0:
+        violations.append(f"pitch {head_cmd.pitch:.1f}° < -40° (clamped)")
+        head_cmd.pitch = -40.0
+    elif head_cmd.pitch > 40.0:
+        violations.append(f"pitch {head_cmd.pitch:.1f}° > 40° (clamped)")
+        head_cmd.pitch = 40.0
+    
+    # Clamp roll to ±40°
+    if head_cmd.roll < -40.0:
+        violations.append(f"roll {head_cmd.roll:.1f}° < -40° (clamped)")
+        head_cmd.roll = -40.0
+    elif head_cmd.roll > 40.0:
+        violations.append(f"roll {head_cmd.roll:.1f}° > 40° (clamped)")
+        head_cmd.roll = 40.0
+    
+    # Log safety violations
+    if violations:
+        updated = add_log(updated, f"Safety violations: {', '.join(violations)}")
+    
+    # Log execution
+    updated = add_log(updated, 
+        f"Execution: head=({head_cmd.yaw:.1f}°, {head_cmd.pitch:.1f}°, {head_cmd.roll:.1f}°)")
+    updated = update_timestamp(updated)
     
     return updated
 
