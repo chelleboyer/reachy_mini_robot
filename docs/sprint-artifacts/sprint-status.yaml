@@ -38,10 +38,10 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Vision Perception Layer (Weeks 2-3)
-  epic-2: in-progress
+  epic-2: done
   2-1-implement-face-detection-node-hailo-hat: done
   2-2-implement-face-tracking-position-estimation: done
-  2-3-implement-head-orientation-calculation: backlog
+  2-3-implement-head-orientation-calculation: done
   epic-2-retrospective: optional
 
   # Epic 3: Audio & Intent Processing (Week 3)

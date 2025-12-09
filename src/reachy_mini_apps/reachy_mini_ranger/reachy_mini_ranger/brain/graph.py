@@ -21,8 +21,9 @@ from typing import Dict
 
 from langgraph.graph import StateGraph, START, END
 
-from brain.models.state import BrainState, update_timestamp, add_log
-from brain.nodes.perception.vision_node import vision_node
+from reachy_mini_ranger.brain.models.state import BrainState, update_timestamp, add_log, HeadCommand
+from reachy_mini_ranger.brain.nodes.perception.vision_node import vision_node
+from reachy_mini_ranger.brain.utils.kinematics import calculate_look_at_with_safety
 
 
 # ============================================================================
@@ -58,14 +59,15 @@ def perception_node(state: BrainState) -> Dict[str, BrainState]:
 
 
 def cognition_node(state: BrainState) -> Dict[str, BrainState]:
-    """Update emotion, manage goals, select behaviors.
+    """Update emotion, manage goals, calculate head orientation.
     
-    This node will eventually:
+    Currently implements:
+    - Head orientation calculation for primary face tracking
+    
+    TODO:
     - Update emotional state based on interactions
     - Create/prioritize goals
     - Select appropriate skill based on context
-    
-    Currently: Placeholder that logs execution.
     
     Args:
         state: Current BrainState
@@ -74,13 +76,43 @@ def cognition_node(state: BrainState) -> Dict[str, BrainState]:
         Dict with updated BrainState
     """
     updated = state.model_copy(deep=True)
-    updated = add_log(updated, "Cognition node executed")
+    
+    # Calculate head orientation to look at primary human
+    primary_human = next((h for h in updated.world_model.humans if h.is_primary), None)
+    
+    if primary_human:
+        # Calculate angles to look at primary human
+        yaw, pitch, roll = calculate_look_at_with_safety(
+            target_x=primary_human.position.z,  # z is forward in our coordinate system
+            target_y=primary_human.position.x,  # x is left
+            target_z=primary_human.position.y,  # y is up
+            current_yaw=updated.actuator_commands.head.yaw,
+            current_pitch=updated.actuator_commands.head.pitch,
+            current_roll=updated.actuator_commands.head.roll,
+            body_yaw=0.0,  # TODO: Get from robot state
+            progress=0.3,  # Smooth transition (30% per cycle)
+            easing="cubic",
+        )
+        
+        # Update head commands
+        updated.actuator_commands.head = HeadCommand(
+            yaw=yaw,
+            pitch=pitch,
+            roll=roll,
+            duration=0.5,  # 500ms smooth motion
+        )
+        
+        updated = add_log(
+            updated,
+            f"Cognition: Calculated head angles for Human {primary_human.persistent_id} "
+            f"(yaw={yaw:.1f}°, pitch={pitch:.1f}°)"
+        )
+    else:
+        updated = add_log(updated, "Cognition: No primary human to track")
+    
     updated = update_timestamp(updated)
     
-    # Placeholder: In real implementation, would update:
-    # - state.emotion
-    # - state.goals
-    # - state.current_plan
+    # TODO: Update emotion, goals, current_plan
     
     return {"state": updated}
 
