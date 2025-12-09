@@ -1,7 +1,12 @@
 ---
 stepsCompleted: [1, 2, 3, 4]
 workflowStatus: complete
-lastUpdated: "2025-12-09"
+lastUpdated: "2025-01-09"
+implementationProgress:
+  epic1: complete (3/3 stories - 100%)
+  epic2: complete (3/3 stories - 100%)
+  epic3: not-started (0/2 stories - 0%)
+  overallProgress: 6/21 stories (29%)
 inputDocuments:
   - docs/PRD.md
   - docs/master-documentation-ideation/arch-mvp-scope-epics-stories.md
@@ -128,11 +133,22 @@ This document provides the complete epic and story breakdown for **Reachy Mini 2
 
 ---
 
-## Epic 1: Project Foundation & LangGraph Brain Setup
+## Epic 1: Project Foundation & LangGraph Brain Setup ✅ COMPLETE
+
+**Status:** ✅ Done (3/3 stories completed - 100%)  
+**Completed:** January 2025  
+**Git Commit:** a4ec784
 
 **Goal:** Establish the foundational project structure, BrainState data model, and LangGraph orchestration framework that all subsequent features will build upon.
 
 **Value:** Without this foundation, we cannot implement the intelligent brain architecture. This epic creates the "operating system" for the robot's intelligence.
+
+**Deliverables:**
+- Brain directory structure with 9 modules (perception, cognition, skills, execution, memory, utils, models)
+- BrainState Pydantic model with 8 sections (380 lines, 25 unit tests)
+- LangGraph StateGraph orchestrator (214 lines, 20+ unit tests)
+- Demo entry point (brain/main.py) showing graph execution
+- Full test coverage (tests/test_brain_state.py, tests/test_graph.py)
 
 ### Story 1.1: Initialize Brain Directory Structure
 
@@ -237,11 +253,23 @@ So that **perception → cognition → skills → execution flows automatically*
 
 ---
 
-## Epic 2: Vision Perception Layer
+## Epic 2: Vision Perception Layer ✅ COMPLETE
+
+**Status:** ✅ Done (3/3 stories completed - 100%)  
+**Completed:** January 2025  
+**Git Commits:** 8067ef1 (Story 2.1), ba2cc7a (Story 2.2), 6e8b67e (Story 2.3)
 
 **Goal:** Enable the robot to see and understand its environment, specifically detecting and tracking human faces in real-time using the Hailo HAT accelerator.
 
 **Value:** Vision is the primary sensory input for social interaction. Face detection enables eye contact, user tracking, and attention behaviors. Building this FIRST ensures social demo uses real data.
+
+**Deliverables:**
+- Face detection with YOLO (YOLOv11n-nano from HuggingFace, 220 lines, 25 unit tests)
+- Face tracking with persistent IDs & 3D position estimation (310 lines, 30+ unit tests)
+- Head orientation calculation with kinematics (330 lines, 39 unit tests)
+- Cognition node integration for primary human tracking
+- Full perception → cognition pipeline operational
+- Total: ~860 production lines + ~900 test lines
 
 ### Story 2.1: Implement Face Detection Node (Hailo HAT)
 

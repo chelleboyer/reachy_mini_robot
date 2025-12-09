@@ -85,9 +85,27 @@ SDK documentation is in **`src-refs/reachy_mini/docs/`** (read-only reference):
 |----------|--------|--------------|
 | PRD | ✅ Complete | Dec 2025 |
 | Architecture | ✅ Complete | Dec 2025 |
+| Epics & Stories | ✅ Complete | Jan 9, 2025 |
+| Epic 1 (Foundation) | ✅ Complete | Jan 2025 |
+| Epic 2 (Vision) | ✅ Complete | Jan 9, 2025 |
 | Ranger Workflow | ✅ Complete | Dec 9, 2025 |
 | Sprint Template | ✅ Complete | Dec 9, 2025 |
 | Task Board | 🔄 In Progress | Dec 9, 2025 |
+
+## 🚀 Implementation Progress
+
+**Overall:** 6/21 stories complete (29%)
+
+| Epic | Status | Progress |
+|------|--------|----------|
+| Epic 1: Foundation & LangGraph Brain | ✅ Done | 3/3 (100%) |
+| Epic 2: Vision Perception Layer | ✅ Done | 3/3 (100%) |
+| Epic 3: Audio & Intent Processing | ⏳ Not Started | 0/2 (0%) |
+| Epic 4: Social Interaction Skills | ⏳ Not Started | 0/3 (0%) |
+| Epic 5: Memory System | ⏳ Not Started | 0/3 (0%) |
+| Epic 6: Emotion & Behavior | ⏳ Not Started | 0/3 (0%) |
+| Epic 7: Cognition & Goals | ⏳ Not Started | 0/2 (0%) |
+| Epic 8: Safety & Polish | ⏳ Not Started | 0/2 (0%) |
 
 ## 🔗 External Resources
 
