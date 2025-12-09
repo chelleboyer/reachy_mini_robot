@@ -1,0 +1,92 @@
+flowchart LR
+  subgraph Perception
+    VISION[VisionNode]
+    AUDIO[AudioIntentNode]
+    PROX[ProximityNode]
+    POSE[PoseEstimationNode]
+  end
+
+  subgraph Cognition
+    GOALS[GoalManagerNode]
+    PLAN[PlannerNode]
+    BEHAVIOR[BehaviorSelectorNode]
+  end
+
+  subgraph Skills
+    SK_FOLLOW[FollowUserSkillNode]
+    SK_NAV[NavigateToLocationSkillNode]
+    SK_IDLE[IdleExploreSkillNode]
+    SK_SOCIAL[SocialInteractionSkillNode]
+    SK_DANCE[DanceExpressiveSkillNode]
+  end
+
+  subgraph Execution
+    SAFETY[SafetyFilterNode]
+    MOTORS[MotorControllerNode]
+    VOICE[VoiceOutputNode]
+  end
+
+  subgraph Memory_Emotion
+    MEM_WRITE[MemoryWriteNode]
+    MEM_RECALL[MemoryRecallNode]
+    EMOTION[EmotionUpdateNode]
+  end
+
+  %% Perception flow
+  VISION --> GOALS
+  VISION --> PLAN
+  VISION --> BEHAVIOR
+
+  AUDIO --> GOALS
+  AUDIO --> BEHAVIOR
+  AUDIO --> SK_SOCIAL
+
+  PROX --> SAFETY
+  PROX --> GOALS
+
+  POSE --> PLAN
+  POSE --> SK_FOLLOW
+  POSE --> SK_NAV
+  POSE --> SK_IDLE
+
+  %% Cognition flow
+  GOALS --> PLAN
+  PLAN --> BEHAVIOR
+
+  %% Behavior -> Skills
+  BEHAVIOR --> SK_FOLLOW
+  BEHAVIOR --> SK_NAV
+  BEHAVIOR --> SK_IDLE
+  BEHAVIOR --> SK_SOCIAL
+  BEHAVIOR --> SK_DANCE
+
+  %% Skills -> Execution
+  SK_FOLLOW --> SAFETY
+  SK_NAV --> SAFETY
+  SK_IDLE --> SAFETY
+  SK_SOCIAL --> SAFETY
+  SK_DANCE --> SAFETY
+
+  SK_SOCIAL --> VOICE
+
+  %% Execution
+  SAFETY --> MOTORS
+
+  %% Memory / Emotion side paths
+  SK_SOCIAL --> MEM_WRITE
+  SK_IDLE --> MEM_WRITE
+  GOALS --> MEM_WRITE
+
+  AUDIO --> MEM_RECALL
+  VISION --> MEM_RECALL
+
+  MEM_RECALL --> SK_SOCIAL
+  MEM_RECALL --> BEHAVIOR
+
+  MEM_WRITE --> EMOTION
+  SK_SOCIAL --> EMOTION
+  SK_IDLE --> EMOTION
+
+  EMOTION --> BEHAVIOR
+  EMOTION --> SK_SOCIAL
+  EMOTION --> SK_IDLE

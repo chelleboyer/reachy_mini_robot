@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "reachy_mini_ranger"
+version = "0.1.0"
+description = "LangGraph-powered autonomous social interaction brain for Reachy Mini"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "reachy-mini",
+    "langgraph>=0.2.0",
+    "langchain-core>=0.3.0",
+    "pydantic>=2.0",
+    "qdrant-client>=1.7.0",
+    "sentence-transformers>=2.0.0",
+]
+keywords = ["reachy-mini-app", "langgraph", "social-robot"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+]
+
+[project.entry-points."reachy_mini_apps"]
+reachy_mini_ranger = "reachy_mini_ranger.main:ReachyMiniRanger"
+
+[tool.setuptools]
+package-dir = { "" = "." }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+reachy_mini_ranger = ["**/*"] # Also include all non-.py files

@@ -1,0 +1,84 @@
+# Sprint Status - Reachy Mini 2.0 LangGraph Brain
+# Generated: 2025-12-09
+# Project: Reachy Mini 2.0 - LangGraph Social Interaction Robot
+# Tracking System: file-system
+# Story Location: docs/sprint-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved, story context created
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done
+
+generated: 2025-12-09
+project: Reachy Mini 2.0 - LangGraph Social Interaction Robot
+project_key: reachy-mini-brain
+tracking_system: file-system
+story_location: docs/sprint-artifacts
+
+development_status:
+  # Epic 1: Project Foundation & LangGraph Brain Setup (Week 1)
+  epic-1: done
+  1-1-initialize-brain-directory-structure: done
+  1-2-implement-brainstate-data-model: done
+  1-3-create-langgraph-orchestrator: done
+  epic-1-retrospective: optional
+
+  # Epic 2: Vision Perception Layer (Weeks 2-3)
+  epic-2: backlog
+  2-1-implement-face-detection-node-hailo-hat: backlog
+  2-2-implement-face-tracking-position-estimation: backlog
+  2-3-implement-head-orientation-calculation: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Audio & Intent Processing (Week 3)
+  epic-3: backlog
+  3-1-implement-wake-word-detection: backlog
+  3-2-implement-speech-to-intent-pipeline: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Social Interaction Skills (Week 4) - AUTONOMOUS DEMO MILESTONE
+  epic-4: backlog
+  4-1-implement-social-response-generation: backlog
+  4-2-implement-gesture-coordination: backlog
+  4-3-implement-end-to-end-autonomous-interaction: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Memory System (Weeks 5-6)
+  epic-5: backlog
+  5-1-implement-person-recognition-storage: backlog
+  5-2-implement-episodic-memory-storage: backlog
+  5-3-implement-memory-recall: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Emotion & Behavior System (Week 6)
+  epic-6: backlog
+  6-1-implement-emotion-state-model: backlog
+  6-2-implement-idle-exploratory-behaviors: backlog
+  6-3-implement-emotion-modulated-behavior: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Cognition & Goal Management (Week 6)
+  epic-7: backlog
+  7-1-implement-goal-management-system: backlog
+  7-2-implement-behavior-selection-logic: backlog
+  epic-7-retrospective: optional
+
+  # Epic 8: Safety, Integration & Polish (Week 7)
+  epic-8: backlog
+  8-1-implement-safety-filter-node: backlog
+  8-2-end-to-end-integration-performance-validation: backlog
+  epic-8-retrospective: optional

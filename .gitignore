@@ -1,0 +1,62 @@
+# Exclude reference source code folders
+src-refs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Brain artifacts
+src/reachy_mini_apps/reachy_mini_ranger/reachy_mini_ranger/brain/logs/
+src/reachy_mini_apps/reachy_mini_ranger/reachy_mini_ranger/brain/cache/
+src/reachy_mini_apps/reachy_mini_ranger/qdrant_storage/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+
+# BMAD
+.bmad/
+.claude/
+.github/
+bmad-custom-modules-src/
+bmad-custom-src/

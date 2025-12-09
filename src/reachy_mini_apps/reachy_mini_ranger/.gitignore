@@ -1,0 +1,12 @@
+__pycache__/
+*.egg-info/
+
+# Brain artifacts
+reachy_mini_ranger/brain/logs/
+reachy_mini_ranger/brain/cache/
+reachy_mini_ranger/qdrant_storage/
+
+# Python
+*.pyc
+.pytest_cache/
+.mypy_cache/
