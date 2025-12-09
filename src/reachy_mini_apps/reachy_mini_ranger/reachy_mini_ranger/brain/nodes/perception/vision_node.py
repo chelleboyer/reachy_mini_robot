@@ -187,41 +187,83 @@ def get_face_tracker() -> FaceTracker:
     return _face_tracker
 
 
-def vision_node(state: BrainState) -> Dict[str, BrainState]:
-    """Vision perception node for LangGraph with face tracking.
-
-    Processes camera frames to detect and track faces, then updates:
-    - BrainState.sensors.vision.faces (raw detections)
-    - BrainState.world_model.humans (tracked faces with 3D positions)
-
-    Note:
-        This is a placeholder implementation for camera integration.
-        In production:
-        - Camera frames should come from ReachyMini media interface
-        - Frame acquisition should be optimized for real-time performance
-
+def vision_node(state: BrainState, reachy_mini=None) -> BrainState:
+    """Vision perception node - processes camera frames for face detection.
+    
+    Integrates with ReachyMini SDK to capture camera frames, detect faces with YOLO,
+    track faces across frames, and estimate 3D positions.
+    
     Args:
-        state: Current BrainState
-
+        state: Current brain state
+        reachy_mini: ReachyMini instance (optional, for camera access)
+    
     Returns:
-        Dictionary with updated BrainState containing tracked faces
+        Updated brain state with detected faces and tracked humans
     """
     updated = state.model_copy(deep=True)
-
-    # TODO: Integrate with ReachyMini camera
-    # TODO: Calculate real-time FPS
-    # For now, placeholder implementation with no camera
-
-    # Placeholder: Clear faces and humans since we have no camera yet
-    updated.sensors.vision.faces = []
+    
+    # If no camera provided, return empty data (for testing without hardware)
+    if reachy_mini is None:
+        updated.sensors.vision.faces = []
+        updated.sensors.vision.frame_timestamp = datetime.now()
+        updated.sensors.vision.fps = 0.0
+        updated.world_model.humans = []
+        updated = add_log(updated, "Vision: no camera provided (test mode)")
+        updated = update_timestamp(updated)
+        return updated
+    
+    # Check if camera is initialized
+    if reachy_mini.media.camera is None:
+        updated.sensors.vision.faces = []
+        updated.sensors.vision.frame_timestamp = datetime.now()
+        updated.sensors.vision.fps = 0.0
+        updated.world_model.humans = []
+        updated = add_log(updated, "Vision: camera not initialized")
+        updated = update_timestamp(updated)
+        return updated
+    
+    # Get frame from camera via SDK
+    frame = reachy_mini.media.get_frame()
+    
+    if frame is None:
+        updated.sensors.vision.faces = []
+        updated.sensors.vision.frame_timestamp = datetime.now()
+        updated.sensors.vision.fps = 0.0
+        updated.world_model.humans = []
+        updated = add_log(updated, "Vision: failed to capture frame")
+        updated = update_timestamp(updated)
+        return updated
+    
+    # Get frame dimensions
+    frame_height, frame_width = frame.shape[:2]
+    
+    # Process frame with face detection and tracking
+    start_time = time.time()
+    detected_faces, tracked_humans, primary_id = process_camera_frame(
+        frame, frame_width, frame_height
+    )
+    processing_time = time.time() - start_time
+    
+    # Calculate FPS (1 / processing time)
+    fps = 1.0 / processing_time if processing_time > 0 else 0.0
+    
+    # Update state
+    updated.sensors.vision.faces = detected_faces
     updated.sensors.vision.frame_timestamp = datetime.now()
-    updated.sensors.vision.fps = 0.0
-    updated.world_model.humans = []
-
-    updated = add_log(updated, "Vision node: 0 face(s) tracked (no camera)")
+    updated.sensors.vision.fps = fps
+    updated.world_model.humans = tracked_humans
+    
+    # Log result
+    num_faces = len(detected_faces)
+    num_humans = len(tracked_humans)
+    primary_str = f", primary={primary_id}" if primary_id is not None else ""
+    updated = add_log(
+        updated, 
+        f"Vision: {num_faces} face(s), {num_humans} human(s){primary_str}, {fps:.1f} FPS"
+    )
     updated = update_timestamp(updated)
-
-    return {"state": updated}
+    
+    return updated
 
 
 def process_camera_frame(

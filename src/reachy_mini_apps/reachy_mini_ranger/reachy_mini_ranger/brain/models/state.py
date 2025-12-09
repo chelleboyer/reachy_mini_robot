@@ -25,7 +25,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ============================================================================
@@ -297,10 +297,10 @@ class BrainState(BaseModel):
     actuator_commands: ActuatorCommands = Field(default_factory=ActuatorCommands)
     metadata: Metadata = Field(default_factory=Metadata)
 
-    class Config:
-        """Pydantic config."""
-        arbitrary_types_allowed = True
-        validate_assignment = True  # Validate on field updates
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        validate_assignment=True  # Validate on field updates
+    )
 
 
 # ============================================================================

@@ -48,13 +48,11 @@ class TestNodeExecution:
     """Test individual node functions."""
 
     def test_perception_node_returns_dict(self):
-        """Test perception_node returns dict with state key."""
+        """Test perception_node returns BrainState."""
         state = create_initial_state()
         result = perception_node(state)
         
-        assert isinstance(result, dict)
-        assert "state" in result
-        assert isinstance(result["state"], BrainState)
+        assert isinstance(result, BrainState)
 
     def test_perception_node_adds_log(self):
         """Test perception_node logs execution."""
@@ -62,34 +60,30 @@ class TestNodeExecution:
         initial_log_count = len(state.metadata.logs)
         
         result = perception_node(state)
-        result_state = result["state"]
         
-        assert len(result_state.metadata.logs) == initial_log_count + 1
-        assert any("Perception" in log for log in result_state.metadata.logs)
+        assert len(result.metadata.logs) == initial_log_count + 1
+        assert any("Perception" in log for log in result.metadata.logs)
 
     def test_cognition_node_returns_dict(self):
-        """Test cognition_node returns dict with state key."""
+        """Test cognition_node returns BrainState."""
         state = create_initial_state()
         result = cognition_node(state)
         
-        assert isinstance(result, dict)
-        assert "state" in result
+        assert isinstance(result, BrainState)
 
     def test_skill_node_returns_dict(self):
-        """Test skill_node returns dict with state key."""
+        """Test skill_node returns BrainState."""
         state = create_initial_state()
         result = skill_node(state)
         
-        assert isinstance(result, dict)
-        assert "state" in result
+        assert isinstance(result, BrainState)
 
     def test_execution_node_returns_dict(self):
-        """Test execution_node returns dict with state key."""
+        """Test execution_node returns BrainState."""
         state = create_initial_state()
         result = execution_node(state)
         
-        assert isinstance(result, dict)
-        assert "state" in result
+        assert isinstance(result, BrainState)
 
     def test_nodes_dont_mutate_input(self):
         """Test nodes return copies, don't mutate input."""
@@ -101,7 +95,7 @@ class TestNodeExecution:
         # Original state unchanged
         assert len(state.metadata.logs) == original_log_count
         # Result state changed
-        assert len(result["state"].metadata.logs) == original_log_count + 1
+        assert len(result.metadata.logs) == original_log_count + 1
 
 
 class TestGraphInvocation:

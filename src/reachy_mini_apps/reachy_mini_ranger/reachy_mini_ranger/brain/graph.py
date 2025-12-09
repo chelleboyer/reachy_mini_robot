@@ -17,8 +17,6 @@ Usage:
     >>> result = graph.invoke(initial_state)
 """
 
-from typing import Dict
-
 from langgraph.graph import StateGraph, START, END
 
 from reachy_mini_ranger.brain.models.state import BrainState, update_timestamp, add_log, HeadCommand
@@ -30,7 +28,7 @@ from reachy_mini_ranger.brain.utils.kinematics import calculate_look_at_with_saf
 # Perception Node Functions
 # ============================================================================
 
-def perception_node(state: BrainState) -> Dict[str, BrainState]:
+def perception_node(state: BrainState, reachy_mini=None) -> BrainState:
     """Process sensory inputs (vision, audio).
     
     Currently implements:
@@ -42,23 +40,17 @@ def perception_node(state: BrainState) -> Dict[str, BrainState]:
     
     Args:
         state: Current BrainState
+        reachy_mini: ReachyMini instance (optional, for camera/audio access)
         
     Returns:
-        Dict with updated BrainState including face detections
+        Updated BrainState including face detections
     """
-    # Run vision processing
-    updated_state = vision_node(state)
-    state = updated_state["state"]
-    
-    # Add perception summary log
-    updated = state.model_copy(deep=True)
-    num_faces = len(updated.sensors.vision.faces)
-    updated = add_log(updated, f"Perception node: {num_faces} face(s) detected")
-    updated = update_timestamp(updated)
-    return {"state": updated}
+    # Run vision processing (vision_node handles logging and timestamp)
+    # Pass reachy_mini for camera access (None in tests)
+    return vision_node(state, reachy_mini=reachy_mini)
 
 
-def cognition_node(state: BrainState) -> Dict[str, BrainState]:
+def cognition_node(state: BrainState) -> BrainState:
     """Update emotion, manage goals, calculate head orientation.
     
     Currently implements:
@@ -73,7 +65,7 @@ def cognition_node(state: BrainState) -> Dict[str, BrainState]:
         state: Current BrainState
         
     Returns:
-        Dict with updated BrainState
+        Updated BrainState
     """
     updated = state.model_copy(deep=True)
     
@@ -114,10 +106,10 @@ def cognition_node(state: BrainState) -> Dict[str, BrainState]:
     
     # TODO: Update emotion, goals, current_plan
     
-    return {"state": updated}
+    return updated
 
 
-def skill_node(state: BrainState) -> Dict[str, BrainState]:
+def skill_node(state: BrainState) -> BrainState:
     """Execute high-level behaviors (social interaction, idle exploration).
     
     This node will eventually:
@@ -131,7 +123,7 @@ def skill_node(state: BrainState) -> Dict[str, BrainState]:
         state: Current BrainState
         
     Returns:
-        Dict with updated BrainState
+        Updated BrainState
     """
     updated = state.model_copy(deep=True)
     updated = add_log(updated, "Skill node executed")
@@ -142,10 +134,10 @@ def skill_node(state: BrainState) -> Dict[str, BrainState]:
     # - state.actuator_commands.antennas
     # - state.actuator_commands.voice.text
     
-    return {"state": updated}
+    return updated
 
 
-def execution_node(state: BrainState) -> Dict[str, BrainState]:
+def execution_node(state: BrainState) -> BrainState:
     """Execute actuator commands with safety filtering.
     
     This node will eventually:
@@ -159,7 +151,7 @@ def execution_node(state: BrainState) -> Dict[str, BrainState]:
         state: Current BrainState
         
     Returns:
-        Dict with updated BrainState
+        Updated BrainState
     """
     updated = state.model_copy(deep=True)
     updated = add_log(updated, "Execution node executed")
@@ -170,7 +162,7 @@ def execution_node(state: BrainState) -> Dict[str, BrainState]:
     # - Execute via ReachyMini SDK
     # - Execute TTS
     
-    return {"state": updated}
+    return updated
 
 
 # ============================================================================
@@ -206,25 +198,60 @@ def create_graph() -> StateGraph:
     return graph
 
 
+class CompiledBrainGraph:
+    """Wrapper for compiled LangGraph that reconstructs BrainState from dict result."""
+    
+    def __init__(self, compiled_graph):
+        self._compiled = compiled_graph
+    
+    def invoke(self, state: BrainState) -> BrainState:
+        """Invoke graph and return final BrainState.
+        
+        Args:
+            state: Input BrainState
+            
+        Returns:
+            BrainState: Updated state after graph execution
+        """
+        result = self._compiled.invoke(state)
+        
+        # LangGraph with Pydantic state returns dict of field values
+        # Reconstruct BrainState from dict
+        if isinstance(result, BrainState):
+            return result
+        elif isinstance(result, dict):
+            # Reconstruct from dict representation
+            return BrainState(**result)
+        else:
+            raise TypeError(f"Unexpected result type: {type(result)}")
+    
+    def __call__(self, state: BrainState) -> BrainState:
+        """Allow direct call: app(state)."""
+        return self.invoke(state)
+
+
 def compile_graph():
     """Create and compile the brain graph.
     
     Returns:
-        CompiledGraph: Ready-to-invoke graph application
+        CompiledBrainGraph: Wrapper with invoke() method that returns BrainState
         
     Example:
         >>> app = compile_graph()
         >>> result = app.invoke(create_initial_state())
+        >>> # Or call directly:
+        >>> result = app(create_initial_state())
     """
     graph = create_graph()
-    return graph.compile()
+    compiled = graph.compile()
+    return CompiledBrainGraph(compiled)
 
 
 # ============================================================================
 # Convenience Functions
 # ============================================================================
 
-def run_brain_cycle(state: BrainState):
+def run_brain_cycle(state: BrainState) -> BrainState:
     """Execute one complete brain cycle.
     
     Args:
@@ -241,5 +268,4 @@ def run_brain_cycle(state: BrainState):
         4
     """
     app = compile_graph()
-    result = app.invoke(state)
-    return result
+    return app.invoke(state)
