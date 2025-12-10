@@ -18,6 +18,8 @@ Usage:
 """
 
 import functools
+import math
+import time
 from langgraph.graph import StateGraph, START, END
 
 from reachy_mini_ranger.brain.models.state import BrainState, update_timestamp, add_log, HeadCommand
@@ -52,56 +54,55 @@ def perception_node(state: BrainState, reachy_mini=None) -> BrainState:
 
 
 def cognition_node(state: BrainState) -> BrainState:
-    """Update emotion, manage goals, calculate head orientation.
+    """High-level behavior planning (idle scanning, interaction selection).
     
-    Currently implements:
-    - Head orientation calculation for primary face tracking
-    
-    TODO:
-    - Update emotional state based on interactions
-    - Create/prioritize goals
-    - Select appropriate skill based on context
+    Face tracking is now handled by CameraWorker running at 30 Hz in a separate thread.
+    This node focuses on:
+    - Idle scanning behavior when no interaction
+    - Future: Social interaction planning, emotion updates, goal management
     
     Args:
         state: Current BrainState
         
     Returns:
-        Updated BrainState
+        Updated BrainState with commanded head pose (base pose, before face tracking offsets)
     """
     updated = state.model_copy(deep=True)
     
-    # Calculate head orientation to look at primary human
+    # Check if we have detected humans (face tracking handled by camera worker)
     primary_human = next((h for h in updated.world_model.humans if h.is_primary), None)
     
     if primary_human:
-        # Calculate angles to look at primary human
-        yaw, pitch, roll = calculate_look_at_with_safety(
-            target_x=primary_human.position.z,  # z is forward in our coordinate system
-            target_y=primary_human.position.x,  # x is left
-            target_z=primary_human.position.y,  # y is up
-            current_yaw=updated.actuator_commands.head.yaw,
-            current_pitch=updated.actuator_commands.head.pitch,
-            current_roll=updated.actuator_commands.head.roll,
-            body_yaw=0.0,  # TODO: Get from robot state
-            progress=0.8,  # Faster response (80% per cycle) - at 3 Hz YOLO speed
-            easing="cubic",
+        # Human detected - camera worker handles face tracking
+        # Brain provides neutral "looking forward" base pose
+        # Face tracking offsets will be applied in main loop
+        updated.actuator_commands.head = HeadCommand(
+            yaw=0.0,
+            pitch=0.0,
+            roll=0.0,
+            duration=0.0,
         )
+        updated = add_log(updated, "Cognition: Human detected, neutral base pose (face tracking active)")
+    else:
+        # No human detected - idle scanning behavior
+        # Slow sinusoidal yaw sweep creates "curious" scanning motion
+        current_time = time.time()
+        scan_period = 4.0  # Complete left-right-left cycle in 4 seconds
+        scan_amplitude = 60.0  # Sweep ±60 degrees
         
-        # Update head commands (no duration - streaming control)
+        # Sinusoidal yaw: sweeps smoothly left to right
+        yaw = scan_amplitude * math.sin(2 * math.pi * current_time / scan_period)
+        pitch = 0.0  # Level head while scanning
+        roll = 0.0
+        
         updated.actuator_commands.head = HeadCommand(
             yaw=yaw,
             pitch=pitch,
             roll=roll,
-            duration=0.0,  # Immediate update for streaming control
+            duration=0.0,
         )
         
-        updated = add_log(
-            updated,
-            f"Cognition: Calculated head angles for Human {primary_human.persistent_id} "
-            f"(yaw={yaw:.1f}°, pitch={pitch:.1f}°)"
-        )
-    else:
-        updated = add_log(updated, "Cognition: No primary human to track")
+        updated = add_log(updated, f"Cognition: Idle scanning (yaw={yaw:.1f}°)")
     
     updated = update_timestamp(updated)
     

@@ -175,7 +175,8 @@ def get_face_detector() -> FaceDetectionNode:
     """Get or create singleton face detector."""
     global _face_detector
     if _face_detector is None:
-        _face_detector = FaceDetectionNode()
+        # Higher confidence threshold for more stable detections
+        _face_detector = FaceDetectionNode(confidence_threshold=0.5)
     return _face_detector
 
 
@@ -236,6 +237,12 @@ def vision_node(state: BrainState, reachy_mini=None) -> BrainState:
     
     # Get frame dimensions
     frame_height, frame_width = frame.shape[:2]
+    
+    # DEBUG: Log frame size once every 100 frames
+    if not hasattr(vision_node, '_frame_count'):
+        vision_node._frame_count = 0
+        logger.info(f"Camera frame size: {frame_width}x{frame_height}")
+    vision_node._frame_count += 1
     
     # Process frame with face detection and tracking
     start_time = time.time()

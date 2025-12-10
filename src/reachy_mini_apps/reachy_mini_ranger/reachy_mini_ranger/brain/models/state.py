@@ -247,6 +247,8 @@ class ActuatorCommands(BaseModel):
     head: HeadCommand = Field(default_factory=HeadCommand)
     antennas: AntennaCommand = Field(default_factory=AntennaCommand)
     voice: VoiceCommand = Field(default_factory=VoiceCommand)
+    # Face tracking target (pixel coordinates for look_at_image)
+    face_tracking_pixel: Optional[tuple[float, float]] = None  # (x, y) in pixels
     # Future: LEDs, etc.
 
 

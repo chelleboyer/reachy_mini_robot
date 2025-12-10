@@ -67,12 +67,13 @@ def calculate_look_at_angles(
     
     # Calculate pitch (rotation around Y axis)
     # atan2(z, horizontal_distance)
+    # Note: Reachy Mini convention is negative pitch = look up
     horizontal_distance = math.sqrt(target_x**2 + target_y**2)
     if horizontal_distance > 0.001:  # Avoid division by zero
-        pitch = math.degrees(math.atan2(target_z, horizontal_distance))
+        pitch = -math.degrees(math.atan2(target_z, horizontal_distance))  # Inverted for Reachy convention
     else:
         # Target directly above/below
-        pitch = 90.0 if target_z > 0 else -90.0
+        pitch = -90.0 if target_z > 0 else 90.0
     
     # Roll calculation (optional, for natural head tilt)
     # For now, keep roll at 0 (no tilt)
