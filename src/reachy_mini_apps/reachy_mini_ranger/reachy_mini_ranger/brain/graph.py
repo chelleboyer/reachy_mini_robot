@@ -12,11 +12,12 @@ Usage:
     >>> from brain.graph import compile_graph
     >>> from brain.models.state import create_initial_state
     >>> 
-    >>> graph = compile_graph()
+    >>> graph = compile_graph(reachy_mini=reachy_mini)
     >>> initial_state = create_initial_state()
     >>> result = graph.invoke(initial_state)
 """
 
+import functools
 from langgraph.graph import StateGraph, START, END
 
 from reachy_mini_ranger.brain.models.state import BrainState, update_timestamp, add_log, HeadCommand
@@ -82,16 +83,16 @@ def cognition_node(state: BrainState) -> BrainState:
             current_pitch=updated.actuator_commands.head.pitch,
             current_roll=updated.actuator_commands.head.roll,
             body_yaw=0.0,  # TODO: Get from robot state
-            progress=0.3,  # Smooth transition (30% per cycle)
+            progress=0.8,  # Faster response (80% per cycle) - at 3 Hz YOLO speed
             easing="cubic",
         )
         
-        # Update head commands
+        # Update head commands (no duration - streaming control)
         updated.actuator_commands.head = HeadCommand(
             yaw=yaw,
             pitch=pitch,
             roll=roll,
-            duration=0.5,  # 500ms smooth motion
+            duration=0.0,  # Immediate update for streaming control
         )
         
         updated = add_log(
@@ -203,21 +204,27 @@ def execution_node(state: BrainState) -> BrainState:
 # Graph Construction
 # ============================================================================
 
-def create_graph() -> StateGraph:
+def create_graph(reachy_mini=None) -> StateGraph:
     """Create the LangGraph StateGraph with all nodes and edges.
+    
+    Args:
+        reachy_mini: Optional ReachyMini instance for hardware access (camera, audio)
     
     Returns:
         StateGraph: Configured graph ready for compilation
     
     Example:
-        >>> graph = create_graph()
+        >>> graph = create_graph(reachy_mini=reachy_mini)
         >>> app = graph.compile()
     """
     # Initialize graph with BrainState schema
     graph = StateGraph(BrainState)
     
+    # Bind reachy_mini to perception node for camera access
+    perception_with_hardware = functools.partial(perception_node, reachy_mini=reachy_mini)
+    
     # Add nodes
-    graph.add_node("perception", perception_node)
+    graph.add_node("perception", perception_with_hardware)
     graph.add_node("cognition", cognition_node)
     graph.add_node("skills", skill_node)
     graph.add_node("execution", execution_node)
@@ -264,19 +271,22 @@ class CompiledBrainGraph:
         return self.invoke(state)
 
 
-def compile_graph():
+def compile_graph(reachy_mini=None):
     """Create and compile the brain graph.
+    
+    Args:
+        reachy_mini: Optional ReachyMini instance for hardware access (camera, audio)
     
     Returns:
         CompiledBrainGraph: Wrapper with invoke() method that returns BrainState
         
     Example:
-        >>> app = compile_graph()
+        >>> app = compile_graph(reachy_mini=reachy_mini)
         >>> result = app.invoke(create_initial_state())
         >>> # Or call directly:
         >>> result = app(create_initial_state())
     """
-    graph = create_graph()
+    graph = create_graph(reachy_mini=reachy_mini)
     compiled = graph.compile()
     return CompiledBrainGraph(compiled)
 

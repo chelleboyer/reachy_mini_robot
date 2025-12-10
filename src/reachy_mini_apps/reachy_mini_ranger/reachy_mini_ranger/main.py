@@ -26,8 +26,12 @@ class ReachyMiniRanger(ReachyMiniApp):
         The brain outputs motor commands via actuator_commands, which are
         executed by the robot via set_target().
         """
-        # Initialize brain
-        graph = compile_graph()
+        # Enable motors for head movement
+        print("Enabling motors...", flush=True)
+        reachy_mini.enable_motors()
+        
+        # Initialize brain (pass reachy_mini for camera access)
+        graph = compile_graph(reachy_mini=reachy_mini)
         state = create_initial_state()
         
         # Settings for web UI
@@ -60,6 +64,7 @@ class ReachyMiniRanger(ReachyMiniApp):
             return {"brain_enabled": brain_enabled}
 
         # Main brain control loop (10 Hz)
+        print("Starting brain loop at 10 Hz...", flush=True)
         loop_start = time.time()
         loop_count = 0
         
@@ -108,12 +113,18 @@ class ReachyMiniRanger(ReachyMiniApp):
                 reachy_mini.media.play_sound("wake_up.wav")
                 sound_play_requested = False
             
-            # Log performance every 10 seconds
+            # Log performance every 2 seconds
             loop_count += 1
-            if loop_count % 100 == 0:  # Every 10 seconds at 10 Hz
+            if loop_count % 20 == 0:  # Every 2 seconds at 10 Hz
                 elapsed = time.time() - loop_start
                 avg_fps = loop_count / elapsed
-                print(f"Brain loop: {avg_fps:.1f} Hz (target: 10 Hz)")
+                # Also log latest brain state for debugging
+                num_faces = len(state.sensors.vision.faces)
+                num_humans = len(state.world_model.humans)
+                head_cmd = state.actuator_commands.head
+                primary = next((h for h in state.world_model.humans if h.is_primary), None)
+                primary_str = f" | Primary at ({primary.position.x:.1f}, {primary.position.y:.1f}, {primary.position.z:.1f})" if primary else ""
+                print(f"Brain loop: {avg_fps:.1f} Hz | Faces: {num_faces}, Humans: {num_humans}{primary_str} | Head: yaw={head_cmd.yaw:.1f}°, pitch={head_cmd.pitch:.1f}°", flush=True)
             
             # Sleep to maintain 10 Hz loop (100ms period)
             cycle_elapsed = time.time() - cycle_start
