@@ -99,6 +99,54 @@
 
 ## ✅ Completed Tasks
 
+### Phase 1B: Main App Integration (December 9, 2025)
+
+- [x] **Task: Integrate brain loop with main app**
+  - Pass reachy_mini to compile_graph for camera access
+  - Enable motors on startup
+  - Execute head commands via set_target at 10 Hz
+  - Add detailed performance logging
+  - **Status:** Complete
+  - **Time:** 2h
+  - **Commit:** f15a2e5
+
+- [x] **Task: Implement execution node safety filter**
+  - Clamp head angles to ±40° pitch/roll, ±180° yaw
+  - Log safety violations
+  - Add 12 comprehensive unit tests
+  - **Status:** Complete
+  - **Time:** 2h
+  - **Commit:** f15a2e5
+
+- [x] **Task: Optimize tracking responsiveness**
+  - Increase progress from 30% to 80% per cycle
+  - Remove motion duration for streaming control
+  - Test on hardware: yaw tracking -8° to +29°
+  - **Status:** Complete
+  - **Time:** 1h
+  - **Commit:** f15a2e5
+
+- [x] **Task: Create camera preview tools**
+  - OpenCV preview with face detection overlays
+  - Web-based preview at localhost:8080
+  - Show faces, humans, 3D positions, tracking IDs
+  - **Status:** Complete
+  - **Time:** 1.5h
+  - **Commit:** f15a2e5
+
+- [x] **Task: Hardware validation on Raspberry Pi 5**
+  - Test face detection (1 face detected ✓)
+  - Test human tracking (1-5 humans with persistent IDs ✓)
+  - Measure brain loop performance (3 Hz, YOLO-limited ✓)
+  - Verify motor control and head movement ✓
+  - Document results in HARDWARE_VALIDATION_RESULTS.md
+  - **Status:** Complete
+  - **Time:** 2h
+  - **Commit:** f15a2e5
+
+**Phase 1B Total Time:** 8.5 hours  
+**Phase 1B Status:** ✅ COMPLETE - Autonomous face tracking operational
+
 - [x] **Initial app setup**
   - Created basic ReachyMiniApp structure
   - Implemented sinusoidal head movement

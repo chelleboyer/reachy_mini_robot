@@ -1,6 +1,6 @@
 # Reachy Mini 2.0 - Project Status
 
-**Last Updated:** January 9, 2025  
+**Last Updated:** December 9, 2025  
 **Repository:** https://github.com/chelleboyer/reachy_mini_robot.git  
 **Branch:** main
 
@@ -8,9 +8,9 @@
 
 ## 🎯 Current Status
 
-**Phase:** Foundation & Perception (Weeks 1-3)  
-**Overall Progress:** 6/21 stories (29%)  
-**Latest Milestone:** ✅ Epic 2 (Vision Perception Layer) Complete
+**Phase:** Foundation & Perception Complete - Hardware Validated  
+**Overall Progress:** Phase 1A & 1B Complete (Autonomous Face Tracking)  
+**Latest Milestone:** ✅ Phase 1B Hardware Validation Complete (Face Tracking @ 3 Hz)
 
 ---
 
@@ -74,8 +74,10 @@ tests/
 
 ### Epic 2: Vision Perception Layer (100%)
 
-**Completed:** January 9, 2025  
-**Commits:** 8067ef1, ba2cc7a, 6e8b67e
+**Completed:** December 9, 2025  
+**Commits:** 8067ef1, ba2cc7a, 6e8b67e, f15a2e5
+
+**Phase 1B: Main App Integration & Hardware Validation**
 
 **Stories:**
 - ✅ 2.1: Implement face detection node (YOLO)
@@ -109,16 +111,34 @@ tests/
 
 **Files Modified:**
 ```
-brain/graph.py - cognition_node with head orientation
+brain/graph.py - cognition_node with head orientation + reachy_mini camera integration
+main.py - motor enable, brain loop with camera, enhanced logging
 brain/utils/__init__.py - kinematics exports
 brain/models/state.py - Human.persistent_id, tracking_confidence
+```
+
+**Phase 1B Additions:**
+```
+camera_preview.py - OpenCV visualization tool (90 lines)
+camera_web_preview.py - Web-based camera viewer (115 lines)
+test_hardware_validation.py - Hardware test script (86 lines)
+docs/reachy-mini-ranger/HARDWARE_VALIDATION_RESULTS.md - Validation report (193 lines)
 ```
 
 **Test Results:**
 - Face detection: 25/25 tests passing
 - Face tracking: 30/30 tests passing
 - Kinematics: 39/39 tests passing
-- **Total: 94/94 vision tests passing (100%)**
+- Execution node safety: 12/12 tests passing
+- **Total: 106/106 tests passing (100%)**
+
+**Hardware Validation (Raspberry Pi 5):**
+- ✅ Face detection working: 1 face detected, tracking 1-5 humans
+- ✅ Head commands calculating: yaw -8° to +29°, pitch 8° to 15°
+- ✅ Brain loop stable: ~3 Hz (YOLO CPU-limited, 10 Hz with Hailo HAT)
+- ✅ Motors enabled and responding to commands
+- ✅ System stability: No crashes during validation
+- ✅ Camera integration: Live feed via daemon, YOLO inference functional
 
 ---
 

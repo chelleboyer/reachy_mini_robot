@@ -42,6 +42,8 @@ development_status:
   2-1-implement-face-detection-node-hailo-hat: done
   2-2-implement-face-tracking-position-estimation: done
   2-3-implement-head-orientation-calculation: done
+  2-4-phase-1b-main-app-integration: done
+  2-5-phase-1b-hardware-validation: done
   epic-2-retrospective: optional
 
   # Epic 3: Audio & Intent Processing (Week 3)
